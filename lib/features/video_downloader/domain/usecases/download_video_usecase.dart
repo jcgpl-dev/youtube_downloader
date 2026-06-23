@@ -1,4 +1,5 @@
 import '../entities/download_type.dart';
+import '../entities/download_status.dart';
 import '../repositories/downloader_repository.dart';
 
 class DownloadVideoUseCase {
@@ -6,7 +7,7 @@ class DownloadVideoUseCase {
 
   DownloadVideoUseCase(this.repository);
 
-  Stream<double> call({
+  Stream<DownloadStatus> call({
     required String url,
     required String outputPath,
     required DownloadType type,

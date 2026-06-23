@@ -17,8 +17,7 @@ class _DownloaderPageState extends State<DownloaderPage> {
   final _urlController = TextEditingController();
   final _pathController = TextEditingController();
   DownloadType _selectedType = DownloadType.mp4;
-  String _activeDownloadUrl =
-      ''; // Tracks the active running download URL independent of input text field
+  String _activeDownloadUrl = '';
 
   @override
   void initState() {
@@ -36,6 +35,23 @@ class _DownloaderPageState extends State<DownloaderPage> {
       if (downloadPath.existsSync()) return downloadPath.path;
     }
     return '.';
+  }
+
+  /// Extracts the standard YouTube 11-character video ID using Regex patterns.
+  String? _extractVideoId(String url) {
+    if (url.isEmpty) return null;
+    final regExp = RegExp(
+      r'(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})',
+    );
+    final match = regExp.firstMatch(url);
+    return match?.group(1);
+  }
+
+  /// Constructs the high-quality video thumbnail network endpoint asset target.
+  String? _getThumbnailUrl(String url) {
+    final videoId = _extractVideoId(url);
+    if (videoId == null) return null;
+    return 'https://img.youtube.com/vi/$videoId/hqdefault.jpg';
   }
 
   @override
@@ -201,8 +217,7 @@ class _DownloaderPageState extends State<DownloaderPage> {
                               type: _selectedType,
                             ),
                           );
-                          _urlController
-                              .clear(); // Safe to wipe the input element instantly!
+                          _urlController.clear();
                         },
                 ),
               );
@@ -295,20 +310,21 @@ class _DownloaderPageState extends State<DownloaderPage> {
     Color cardColor = theme.colorScheme.surfaceContainerHigh;
 
     if (state is DownloadLoading) {
-      title = _selectedType == DownloadType.mp3
-          ? 'EXTRACTING AUDIO CONTEXT'
-          : 'DOWNLOADING MEDIA RESOURCE';
+      title = state.type == DownloadType.mp3
+          ? 'Extracting Audio Resource...'
+          : 'Downloading High-Res Video...';
       progressValue = state.progress;
       statusIndicator = Text(
         '${(state.progress * 100).toStringAsFixed(1)}%',
         style: theme.textTheme.titleSmall?.copyWith(
           fontWeight: FontWeight.bold,
+          color: theme.colorScheme.primary,
         ),
       );
     } else if (state is DownloadSuccess) {
       title = 'DOWNLOAD COMPLETE';
       progressValue = 1.0;
-      cardColor = Colors.green.withOpacity(0.05);
+      cardColor = Colors.green.withOpacity(0.04);
       statusIndicator = IconButton(
         icon: const Icon(Icons.clear_sharp, color: Colors.green),
         onPressed: () =>
@@ -316,7 +332,7 @@ class _DownloaderPageState extends State<DownloaderPage> {
       );
     } else if (state is DownloadFailure) {
       title = 'TASK EXECUTION FAILED';
-      cardColor = theme.colorScheme.errorContainer.withOpacity(0.2);
+      cardColor = theme.colorScheme.errorContainer.withOpacity(0.15);
       statusIndicator = IconButton(
         icon: const Icon(Icons.refresh_sharp, color: Colors.red),
         onPressed: () =>
@@ -324,9 +340,11 @@ class _DownloaderPageState extends State<DownloaderPage> {
       );
     }
 
+    final thumbnailUrl = _getThumbnailUrl(_activeDownloadUrl);
+
     return Container(
       key: ValueKey(state.runtimeType),
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: cardColor,
         borderRadius: BorderRadius.zero,
@@ -337,41 +355,74 @@ class _DownloaderPageState extends State<DownloaderPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // 🎥 High-Fidelity Video Thumbnail Preview Container
               Container(
-                padding: const EdgeInsets.all(10),
+                width: 140,
+                height: 80,
                 decoration: BoxDecoration(
-                  color: theme.colorScheme.primaryContainer.withOpacity(0.4),
-                  borderRadius: BorderRadius.zero,
+                  color: theme.colorScheme.surfaceContainerHighest,
+                  border: Border.all(color: theme.colorScheme.outlineVariant),
                 ),
-                child: Icon(
-                  _selectedType == DownloadType.mp3
-                      ? Icons.audiotrack_sharp
-                      : Icons.movie_sharp,
-                  size: 20,
-                  color: theme.colorScheme.primary,
-                ),
+                child: thumbnailUrl != null
+                    ? Image.network(
+                        thumbnailUrl,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Center(
+                            child: Icon(
+                              Icons.play_circle_outline_rounded,
+                              color: theme.colorScheme.outline,
+                              size: 28,
+                            ),
+                          );
+                        },
+                      )
+                    : Center(
+                        child: Icon(
+                          Icons.video_file_outlined,
+                          color: theme.colorScheme.outline,
+                          size: 28,
+                        ),
+                      ),
               ),
-              const SizedBox(width: 16),
+              const SizedBox(width: 20),
+              // 📝 Title and Dynamic Link Subtexts
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       title,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                       style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 0.5,
+                        fontWeight: FontWeight.w600,
+                        height: 1.25,
                       ),
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      _activeDownloadUrl,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.outline,
-                      ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.link_rounded,
+                          size: 14,
+                          color: theme.colorScheme.outline,
+                        ),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: Text(
+                            _activeDownloadUrl,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: theme.colorScheme.outline,
+                              fontFamily: 'monospace',
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -380,19 +431,30 @@ class _DownloaderPageState extends State<DownloaderPage> {
               statusIndicator,
             ],
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 20),
+          // 📊 Unified Linear Progress Metric
           if (state is! DownloadFailure) ...[
             LinearProgressIndicator(
-              value: state is DownloadSuccess ? 1.0 : progressValue,
+              value: progressValue,
               minHeight: 4,
               backgroundColor: theme.colorScheme.surfaceContainerHighest,
-              borderRadius: BorderRadius.zero,
+              valueColor: AlwaysStoppedAnimation<Color>(
+                state is DownloadSuccess
+                    ? Colors.green
+                    : theme.colorScheme.primary,
+              ),
             ),
           ] else ...[
-            Text(
-              (state).message,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.error,
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              color: theme.colorScheme.errorContainer.withOpacity(0.3),
+              child: Text(
+                state.message,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.error,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ),
           ],

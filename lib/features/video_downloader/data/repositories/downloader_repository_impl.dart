@@ -1,4 +1,5 @@
 import '../../domain/entities/download_type.dart';
+import '../../domain/entities/download_status.dart';
 import '../../domain/repositories/downloader_repository.dart';
 import '../datasources/ytdlp_local_datasource.dart';
 
@@ -8,7 +9,7 @@ class DownloaderRepositoryImpl implements DownloaderRepository {
   DownloaderRepositoryImpl(this.localDataSource);
 
   @override
-  Stream<double> downloadMedia({
+  Stream<DownloadStatus> downloadMedia({
     required String url,
     required String outputPath,
     required DownloadType type,
