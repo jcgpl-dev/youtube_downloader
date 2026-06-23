@@ -50,13 +50,12 @@ class YtdlpLocalDataSourceImpl implements YtdlpLocalDataSource {
 
       await for (final line in lineStream) {
         final status = DownloadProgressModel.parseLine(line);
+
         if (status != null) {
           if (status.state == DownloadStatusState.failure) {
             yield status;
             return;
           }
-
-          lastProgress = status.progress;
           yield status;
         }
       }

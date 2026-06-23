@@ -14,7 +14,6 @@ class DownloaderBloc extends Bloc<DownloaderEvent, DownloaderState> {
     });
 
     on<StartDownloadEvent>((event, emit) async {
-      // Intentionally emit initial progress with the payload type
       emit(DownloadLoading(progress: 0.0, type: event.type));
 
       try {
@@ -34,20 +33,23 @@ class DownloaderBloc extends Bloc<DownloaderEvent, DownloaderState> {
                 return DownloadLoading(
                   progress: status.progress,
                   type: event.type,
+                  downloadedSize: status.downloadedSize,
+                  totalSize: status.totalSize,
+                  speed: status.speed,
+                  eta: status.eta,
                 );
               case DownloadStatusState.success:
-                return DownloadSuccess(type: event.type);
+                return DownloadSuccess(event.type);
               case DownloadStatusState.failure:
                 return DownloadFailure(
-                  message: status.errorMessage ?? 'Unknown extraction error.',
+                  status.errorMessage ?? 'Unknown extraction error.',
                 );
             }
           },
-          onError: (error, stackTrace) =>
-              DownloadFailure(message: error.toString()),
+          onError: (error, stackTrace) => DownloadFailure(error.toString()),
         );
       } catch (e) {
-        emit(DownloadFailure(message: e.toString()));
+        emit(DownloadFailure(e.toString()));
       }
     });
   }

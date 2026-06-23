@@ -17,7 +17,8 @@ class _DownloaderPageState extends State<DownloaderPage> {
   final _urlController = TextEditingController();
   final _pathController = TextEditingController();
   DownloadType _selectedType = DownloadType.mp4;
-  String _activeDownloadUrl = '';
+  String _activeDownloadUrl =
+      ''; // Tracks the active running download URL independent of input text field
 
   @override
   void initState() {
@@ -217,7 +218,8 @@ class _DownloaderPageState extends State<DownloaderPage> {
                               type: _selectedType,
                             ),
                           );
-                          _urlController.clear();
+                          _urlController
+                              .clear(); // Safe to wipe the input element instantly!
                         },
                 ),
               );
@@ -309,11 +311,22 @@ class _DownloaderPageState extends State<DownloaderPage> {
     double progressValue = 0.0;
     Color cardColor = theme.colorScheme.surfaceContainerHigh;
 
+    String? eta;
+    String? speed;
+    String? sizeString;
+
     if (state is DownloadLoading) {
       title = state.type == DownloadType.mp3
           ? 'Extracting Audio Resource...'
           : 'Downloading High-Res Video...';
       progressValue = state.progress;
+
+      eta = state.eta;
+      speed = state.speed;
+      if (state.downloadedSize != null && state.totalSize != null) {
+        sizeString = '${state.downloadedSize} / ${state.totalSize}';
+      }
+
       statusIndicator = Text(
         '${(state.progress * 100).toStringAsFixed(1)}%',
         style: theme.textTheme.titleSmall?.copyWith(
@@ -357,7 +370,7 @@ class _DownloaderPageState extends State<DownloaderPage> {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // 🎥 High-Fidelity Video Thumbnail Preview Container
+              // 🎥 16:9 Video Thumbnail Preview Block
               Container(
                 width: 140,
                 height: 80,
@@ -388,7 +401,7 @@ class _DownloaderPageState extends State<DownloaderPage> {
                       ),
               ),
               const SizedBox(width: 20),
-              // 📝 Title and Dynamic Link Subtexts
+              // 📝 File Title & Meta Context Lines
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -432,7 +445,7 @@ class _DownloaderPageState extends State<DownloaderPage> {
             ],
           ),
           const SizedBox(height: 20),
-          // 📊 Unified Linear Progress Metric
+          // 📊 Progress and Industry Dashboard Metadata Ribbon
           if (state is! DownloadFailure) ...[
             LinearProgressIndicator(
               value: progressValue,
@@ -443,6 +456,53 @@ class _DownloaderPageState extends State<DownloaderPage> {
                     ? Colors.green
                     : theme.colorScheme.primary,
               ),
+            ),
+            const SizedBox(height: 10),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                // Displaying size progress fraction: e.g., "12.4MiB / 45.2MiB"
+                Text(
+                  sizeString ??
+                      (state is DownloadSuccess ? 'Finished' : '-- / --'),
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                // Render Speed and ETA stats side-by-side during active operations
+                if (state is DownloadLoading)
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.speed_rounded,
+                        size: 14,
+                        color: theme.colorScheme.outline,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        speed ?? '0.00MiB/s',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.outline,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Icon(
+                        Icons.timer_outlined,
+                        size: 14,
+                        color: theme.colorScheme.outline,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        eta != null ? 'ETA $eta' : 'Estimating...',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.outline,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+              ],
             ),
           ] else ...[
             Container(

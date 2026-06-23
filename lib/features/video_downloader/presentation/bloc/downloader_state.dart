@@ -9,16 +9,27 @@ class DownloaderInitial extends DownloaderState {}
 class DownloadLoading extends DownloaderState {
   final double progress;
   final DownloadType type;
+  final String? downloadedSize;
+  final String? totalSize;
+  final String? speed;
+  final String? eta;
 
-  const DownloadLoading({required this.progress, required this.type});
+  const DownloadLoading({
+    required this.progress,
+    required this.type,
+    this.downloadedSize,
+    this.totalSize,
+    this.speed,
+    this.eta,
+  });
 }
 
 class DownloadSuccess extends DownloaderState {
   final DownloadType type;
-  const DownloadSuccess({required this.type});
+  const DownloadSuccess(this.type);
 }
 
 class DownloadFailure extends DownloaderState {
   final String message;
-  const DownloadFailure({required this.message});
+  const DownloadFailure(this.message);
 }
