@@ -1,10 +1,10 @@
 // lib/main.dart
-
+import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
-import 'package:bitsdojo_window/bitsdojo_window.dart';
 
+import 'core/presentation/widgets/custom_window_title_bar.dart';
 import 'core/utils/cmd_runner.dart';
 import 'features/video_downloader/data/datasources/ytdlp_local_datasource.dart';
 import 'features/video_downloader/data/repositories/downloader_repository_impl.dart';
@@ -47,73 +47,25 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final baseTheme = ThemeData(
+    final darkTheme = ThemeData(
       useMaterial3: true,
       colorScheme: ColorScheme.fromSeed(
         seedColor: Colors.redAccent,
-        brightness:
-            Brightness.dark, // Embracing a sleek dark mode for a sharp UI
+        brightness: Brightness.dark,
       ),
-    );
-
-    // Custom sharp colors for the system buttons window controls
-    final buttonColors = WindowButtonColors(
-      iconNormal: baseTheme.colorScheme.onSurface,
-      mouseOver: baseTheme.colorScheme.surfaceContainerHigh,
-      mouseDown: baseTheme.colorScheme.surfaceContainerHighest,
-      iconMouseOver: baseTheme.colorScheme.primary,
-      iconMouseDown: baseTheme.colorScheme.primary,
-    );
-
-    final closeButtonColors = WindowButtonColors(
-      mouseOver: const Color(0xFFD32F2F),
-      mouseDown: const Color(0xFFB71C1C),
-      iconNormal: baseTheme.colorScheme.onSurface,
-      iconMouseOver: Colors.white,
     );
 
     return MaterialApp(
       title: 'Media Loader',
       debugShowCheckedModeBanner: false,
-      theme: baseTheme,
+      theme: darkTheme,
       home: Scaffold(
         body: WindowBorder(
-          color: baseTheme.colorScheme.outlineVariant,
+          color: darkTheme.colorScheme.outlineVariant,
           width: 1,
           child: Column(
             children: [
-              // Sharp Custom Titlebar
-              Container(
-                color: baseTheme.colorScheme.surfaceContainerLow,
-                height: 32,
-                child: MoveWindow(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.only(left: 12.0),
-                        child: Text(
-                          'MEDIA LOADER CLI WRAPPER',
-                          style: baseTheme.textTheme.labelSmall?.copyWith(
-                            letterSpacing: 1.5,
-                            fontWeight: FontWeight.w600,
-                            color: baseTheme.colorScheme.outline,
-                          ),
-                        ),
-                      ),
-                      // Window Navigation controls
-                      Row(
-                        children: [
-                          MinimizeWindowButton(colors: buttonColors),
-                          MaximizeWindowButton(colors: buttonColors),
-                          CloseWindowButton(colors: closeButtonColors),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              // Entire Core Application View underneath
+              const CustomWindowTitleBar(),
               Expanded(
                 child: BlocProvider(
                   create: (_) => sl<DownloaderBloc>(),
