@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../domain/entities/download_type.dart';
 import '../bloc/downloader_bloc.dart';
 import '../bloc/downloader_event.dart';
@@ -27,6 +28,7 @@ class TaskCardWidget extends StatelessWidget {
     Widget statusIndicator = const SizedBox.shrink();
     double progressValue = 0.0;
     Color cardColor = theme.colorScheme.surfaceContainerHigh;
+    Color progressColor = theme.colorScheme.primary;
 
     String? eta;
     String? speed;
@@ -49,7 +51,7 @@ class TaskCardWidget extends StatelessWidget {
 
       statusIndicator = Text(
         '${(loadingState.progress * 100).toStringAsFixed(1)}%',
-        style: theme.textTheme.titleSmall?.copyWith(
+        style: theme.textTheme.labelMedium?.copyWith(
           fontWeight: FontWeight.bold,
           color: theme.colorScheme.primary,
         ),
@@ -57,7 +59,8 @@ class TaskCardWidget extends StatelessWidget {
     } else if (state is DownloadSuccess) {
       title = 'DOWNLOAD COMPLETE';
       progressValue = 1.0;
-      cardColor = Colors.green.withOpacity(0.04);
+      cardColor = AppColors.success.withOpacity(0.04);
+      progressColor = AppColors.success;
 
       statusIndicator = Row(
         mainAxisSize: MainAxisSize.min,
@@ -75,7 +78,7 @@ class TaskCardWidget extends StatelessWidget {
           const SizedBox(width: 4),
           IconButton(
             tooltip: 'Clear Task',
-            icon: const Icon(Icons.clear_sharp, color: Colors.green),
+            icon: const Icon(Icons.clear_sharp, color: AppColors.success),
             onPressed: () => context.read<DownloaderBloc>().add(
               const ResetMediaLoaderEvent(),
             ),
@@ -83,11 +86,10 @@ class TaskCardWidget extends StatelessWidget {
         ],
       );
     } else if (state is DownloadFailure) {
-      final failureState = state as DownloadFailure;
       title = 'TASK EXECUTION FAILED';
-      cardColor = theme.colorScheme.errorContainer.withOpacity(0.15);
+      cardColor = theme.colorScheme.error.withOpacity(0.08);
       statusIndicator = IconButton(
-        icon: const Icon(Icons.refresh_sharp, color: Colors.red),
+        icon: const Icon(Icons.refresh_sharp, color: AppColors.error),
         onPressed: () =>
             context.read<DownloaderBloc>().add(const ResetMediaLoaderEvent()),
       );
@@ -148,10 +150,7 @@ class TaskCardWidget extends StatelessWidget {
                       title,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                        height: 1.25,
-                      ),
+                      style: theme.textTheme.titleLarge?.copyWith(height: 1.25),
                     ),
                     const SizedBox(height: 8),
                     Row(
@@ -167,9 +166,10 @@ class TaskCardWidget extends StatelessWidget {
                             activeDownloadUrl,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: theme.textTheme.bodySmall?.copyWith(
+                            style: theme.textTheme.bodyMedium?.copyWith(
                               color: theme.colorScheme.outline,
                               fontFamily: 'monospace',
+                              fontSize: 12,
                             ),
                           ),
                         ),
@@ -188,11 +188,7 @@ class TaskCardWidget extends StatelessWidget {
               value: progressValue,
               minHeight: 4,
               backgroundColor: theme.colorScheme.surfaceContainerHighest,
-              valueColor: AlwaysStoppedAnimation<Color>(
-                state is DownloadSuccess
-                    ? Colors.green
-                    : theme.colorScheme.primary,
-              ),
+              valueColor: AlwaysStoppedAnimation<Color>(progressColor),
             ),
             const SizedBox(height: 10),
             Row(
@@ -201,9 +197,9 @@ class TaskCardWidget extends StatelessWidget {
                 Text(
                   sizeString ??
                       (state is DownloadSuccess ? 'Finished' : '-- / --'),
-                  style: theme.textTheme.bodySmall?.copyWith(
+                  style: theme.textTheme.labelMedium?.copyWith(
                     color: theme.colorScheme.onSurfaceVariant,
-                    fontWeight: FontWeight.w500,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
                 if (state is DownloadLoading)
@@ -217,7 +213,7 @@ class TaskCardWidget extends StatelessWidget {
                       const SizedBox(width: 4),
                       Text(
                         speed ?? '0.00MiB/s',
-                        style: theme.textTheme.bodySmall?.copyWith(
+                        style: theme.textTheme.labelMedium?.copyWith(
                           color: theme.colorScheme.outline,
                         ),
                       ),
@@ -230,9 +226,9 @@ class TaskCardWidget extends StatelessWidget {
                       const SizedBox(width: 4),
                       Text(
                         eta != null ? 'ETA $eta' : 'Estimating...',
-                        style: theme.textTheme.bodySmall?.copyWith(
+                        style: theme.textTheme.labelMedium?.copyWith(
                           color: theme.colorScheme.outline,
-                          fontWeight: FontWeight.w500,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ],
@@ -243,12 +239,12 @@ class TaskCardWidget extends StatelessWidget {
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(12),
-              color: theme.colorScheme.errorContainer.withOpacity(0.3),
+              color: theme.colorScheme.error.withOpacity(0.12),
               child: Text(
                 (state as DownloadFailure).message,
-                style: theme.textTheme.bodySmall?.copyWith(
+                style: theme.textTheme.labelMedium?.copyWith(
                   color: theme.colorScheme.error,
-                  fontWeight: FontWeight.w500,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ),

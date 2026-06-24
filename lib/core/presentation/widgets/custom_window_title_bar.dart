@@ -1,5 +1,6 @@
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:flutter/material.dart';
+import '../../theme/app_colors.dart';
 
 class CustomWindowTitleBar extends StatelessWidget {
   const CustomWindowTitleBar({super.key});
@@ -8,9 +9,8 @@ class CustomWindowTitleBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    // Custom sharp colors for the system buttons window controls
     final buttonColors = WindowButtonColors(
-      iconNormal: theme.colorScheme.onSurface,
+      iconNormal: theme.colorScheme.onSurfaceVariant,
       mouseOver: theme.colorScheme.surfaceContainerHigh,
       mouseDown: theme.colorScheme.surfaceContainerHighest,
       iconMouseOver: theme.colorScheme.primary,
@@ -18,30 +18,20 @@ class CustomWindowTitleBar extends StatelessWidget {
     );
 
     final closeButtonColors = WindowButtonColors(
-      mouseOver: const Color(0xFFD32F2F),
-      mouseDown: const Color(0xFFB71C1C),
-      iconNormal: theme.colorScheme.onSurface,
-      iconMouseOver: Colors.white,
+      mouseOver: AppColors.error,
+      mouseDown: AppColors.primaryDark,
+      iconNormal: theme.colorScheme.onSurfaceVariant,
+      iconMouseOver: theme.colorScheme.onSurface,
     );
 
     return Container(
-      color: theme.colorScheme.surfaceContainerLow,
+      color: theme.colorScheme.surface,
       height: 32,
       child: MoveWindow(
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Padding(
-              padding: const EdgeInsets.only(left: 12.0),
-              child: Text(
-                'YOUTUBE VIDEO DOWNLOADER BY JESIE GAPOL',
-                style: theme.textTheme.labelSmall?.copyWith(
-                  letterSpacing: 1.2,
-                  fontWeight: FontWeight.w600,
-                  color: theme.colorScheme.outline,
-                ),
-              ),
-            ),
+            const Spacer(),
             Row(
               children: [
                 MinimizeWindowButton(colors: buttonColors),

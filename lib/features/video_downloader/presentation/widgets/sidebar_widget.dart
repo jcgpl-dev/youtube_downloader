@@ -1,36 +1,26 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:youtube_downloader/core/presentation/widgets/app_brand.dart';
 import '../../domain/entities/download_type.dart';
-import '../bloc/downloader_bloc.dart';
-import '../bloc/downloader_event.dart';
-import '../bloc/downloader_state.dart';
 
 class SidebarWidget extends StatelessWidget {
   final ThemeData theme;
   final bool isHorizontal;
-  final TextEditingController urlController;
   final TextEditingController pathController;
   final DownloadType selectedType;
   final ValueChanged<DownloadType> onTypeChanged;
-  final ValueChanged<String> onDownloadStarted;
 
   const SidebarWidget({
     super.key,
     required this.theme,
     required this.isHorizontal,
-    required this.urlController,
     required this.pathController,
     required this.selectedType,
     required this.onTypeChanged,
-    required this.onDownloadStarted,
   });
 
   @override
   Widget build(BuildContext context) {
     final formatSelector = SegmentedButton<DownloadType>(
-      style: SegmentedButton.styleFrom(
-        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
-      ),
       segments: const [
         ButtonSegment(
           value: DownloadType.mp4,
@@ -50,29 +40,15 @@ class SidebarWidget extends StatelessWidget {
     return Container(
       width: isHorizontal ? 320 : double.infinity,
       color: theme.colorScheme.surfaceContainerLow,
-      padding: const EdgeInsets.all(24.0),
+      padding: const EdgeInsets.fromLTRB(24.0, 16.0, 24.0, 24.0),
       child: Flex(
         direction: isHorizontal ? Axis.vertical : Axis.horizontal,
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: isHorizontal
+            ? CrossAxisAlignment.start
+            : CrossAxisAlignment.center,
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Icon(
-                Icons.video_library_rounded,
-                color: theme.colorScheme.primary,
-                size: 24,
-              ),
-              const SizedBox(width: 12),
-              Text(
-                'MEDIA LOADER',
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 1.2,
-                ),
-              ),
-            ],
-          ),
+          AppBrandWidget(theme: theme),
           if (isHorizontal)
             const SizedBox(height: 32)
           else
@@ -105,57 +81,22 @@ class SidebarWidget extends StatelessWidget {
             child: TextField(
               controller: pathController,
               style: theme.textTheme.bodyMedium,
-              decoration: InputDecoration(
-                prefixIcon: const Icon(Icons.folder_open_rounded, size: 20),
-                filled: true,
-                fillColor: theme.colorScheme.surface,
-                border: const OutlineInputBorder(
-                  borderRadius: BorderRadius.zero,
-                ),
+              decoration: const InputDecoration(
+                prefixIcon: Icon(Icons.folder_open_rounded, size: 20),
               ),
             ),
           ),
-          if (isHorizontal) const Spacer() else const SizedBox(width: 16),
-          BlocBuilder<DownloaderBloc, DownloaderState>(
-            builder: (context, state) {
-              final isLoading = state is DownloadLoading;
-              return SizedBox(
-                width: isHorizontal ? double.infinity : 160,
-                height: 48,
-                child: FilledButton.icon(
-                  style: FilledButton.styleFrom(
-                    shape: const RoundedRectangleBorder(
-                      borderRadius: BorderRadius.zero,
-                    ),
-                  ),
-                  icon: isLoading
-                      ? const SizedBox(
-                          width: 18,
-                          height: 18,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
-                          ),
-                        )
-                      : const Icon(Icons.download_rounded),
-                  label: Text(isLoading ? 'RUNNING...' : 'FETCH MEDIA'),
-                  onPressed: isLoading || urlController.text.trim().isEmpty
-                      ? null
-                      : () {
-                          final targetUrl = urlController.text.trim();
-                          onDownloadStarted(targetUrl);
-                          context.read<DownloaderBloc>().add(
-                            StartDownloadEvent(
-                              url: targetUrl,
-                              outputPath: pathController.text.trim(),
-                              type: selectedType,
-                            ),
-                          );
-                          urlController.clear();
-                        },
-                ),
-              );
-            },
+
+          const Spacer(),
+
+          if (isHorizontal) const SizedBox(height: 16),
+          Text(
+            'Developed by Jesie Gapol',
+            style: theme.textTheme.labelMedium?.copyWith(
+              color: theme.colorScheme.outline,
+              fontSize: 10,
+              letterSpacing: 0.3,
+            ),
           ),
         ],
       ),
